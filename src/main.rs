@@ -1,30 +1,12 @@
-//A command-line tool that plays Marco Polo
-use clap::Parser;
+use rust_sql::{connect_db, create_table, load_data};
 
-#[derive(Parser)]
-#[clap(version = "1.0", author = "Noah Gift", about = "A Marco Polo game.")]
-struct Cli {
-    #[clap(subcommand)]
-    command: Option<Commands>,
-}
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let db_name = "src/Diabetes.db"; // Adjust this path if needed
+    let dataset_path = "src/Diabetes.csv"; // Adjust this path if needed
 
-#[derive(Parser)]
-enum Commands {
-    #[clap(version = "1.0", author = "Noah Gift", about = "A Marco Polo game.")]
-    Marco {
-        #[clap(short, long)]
-        name: String,
-    },
-}
+    let conn = connect_db(db_name)?;
+    create_table(&conn)?;
+    load_data(&conn, dataset_path)?;
 
-// This is the main function
-// hello::marco_polo(&name)
-fn main() {
-    let args = Cli::parse();
-    match args.command {
-        Some(Commands::Marco { name }) => {
-            println!("{}", hello::marco_polo(&name));
-        }
-        None => println!("No command was used"),
-    }
+    Ok(())
 }
