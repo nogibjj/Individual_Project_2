@@ -1,12 +1,43 @@
-use rust_sql::{connect_db, create_table, load_data};
+use rust_sql::{create_table, import_csv_to_sqlite, query_db};
+use std::time::Instant; // Assuming your library is called "rust_sql"
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let db_name = "src/Diabetes.db"; // Adjust this path if needed
-    let dataset_path = "src/Diabetes.csv"; // Adjust this path if needed
+struct Profiler {
+    start_time: Instant,
+}
 
-    let conn = connect_db(db_name)?;
-    create_table(&conn)?;
-    load_data(&conn, dataset_path)?;
+impl Profiler {
+    fn new() -> Profiler {
+        Profiler {
+            start_time: Instant::now(),
+        }
+    }
 
-    Ok(())
+    fn start(&mut self) {
+        self.start_time = Instant::now();
+    }
+
+    fn stop(&self, name: &str) {
+        let elapsed = self.start_time.elapsed();
+        println!("{} took {:?}", name, elapsed);
+    }
+}
+
+fn main() {
+    env_logger::init();
+    let mut profiler = Profiler::new();
+    profiler.start();
+
+    let conn = rusqlite::Connection::open("Diabetes.db").unwrap();
+    create_table(&conn).unwrap();
+
+    profiler.stop("create table");
+    profiler.start();
+
+    import_csv_to_sqlite(&conn).unwrap();
+    profiler.stop("import csv to sqlite");
+
+    profiler.start();
+    let q_result = query_db(&conn, "SELECT * FROM diabetes_data LIMIT 5").unwrap();
+    println!("{:?}", q_result);
+    profiler.stop("query db");
 }
