@@ -14,5 +14,5 @@ jobs:
           profile: minimal
           components: clippy, rustfmt
           override: true
-      - name: Run rustfmt
-        run: make format-check
+      - name: Format
+        run: make format
