@@ -101,4 +101,16 @@ pub fn query_db(conn: &Connection, query: &str) -> Result<Vec<DiabetesData>> {
 
     let diabetes_data: Result<Vec<DiabetesData>> = rows.collect();
     diabetes_data
+
+}
+
+pub fn querydb(conn: &Connection, query: &str) -> Result<()> {
+    let mut stmt = conn.prepare(query)?;
+    let mut rows = stmt.query([]).unwrap();
+
+    while let Some(row) = rows.next()? {
+        println!("{:?}", row);
+    }
+
+    Ok(())
 }
